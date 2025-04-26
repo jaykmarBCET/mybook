@@ -1,0 +1,50 @@
+### Create User
+POST http://localhost:3000/api/v1/profile/register
+Content-Type: application/json
+
+{
+  "name": "Jay Kumar",
+  "email": "jaykumar3dear@gmail.com",
+  "password": "12345678"
+}
+
+###
+
+### Login User
+POST http://localhost:3000/api/v1/profile/login
+Content-Type: application/json
+
+{
+  "email": "jaykumar3dear@gmail.com",
+  "password": "12345678"
+}
+
+###
+
+### Get Current User
+GET http://localhost:3000/api/v1/profile/current-user
+Content-Type: application/json
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQiLCJlbWFpbCI6ImpheWt1bWFyM2RlYXJAZ21haWwuY29tIiwiaWF0IjoxNzQzOTQ0OTgxLCJleHAiOjE3NDQ1NDk3ODF9.9zyfZy-akIeOzdjb06jQwvpnuIrDQNPQ896DVg6VOVw
+
+###
+
+### Verify User
+GET http://localhost:3000/api/v1/email/verify?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQiLCJlbWFpbCI6ImpheWt1bWFyM2RlYXJAZ21haWwuY29tIiwiaWF0IjoxNzQzOTQ0OTgxLCJleHAiOjE3NDQ1NDk3ODF9.9zyfZy-akIeOzdjb06jQwvpnuIrDQNPQ896DVg6VOVw
+
+###
+
+### Update Profile (Multipart/Form-Data)
+PUT http://localhost:3000/api/v1/profile/update-profile
+Content-Type: multipart/form-data
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQiLCJlbWFpbCI6ImpheWt1bWFyM2RlYXJAZ21haWwuY29tIiwiaWF0IjoxNzQzOTQ0OTgxLCJleHAiOjE3NDQ1NDk3ODF9.9zyfZy-akIeOzdjb06jQwvpnuIrDQNPQ896DVg6VOVw
+
+# Use this section in Postman or REST Client form-data:
+# ---- Form-data key-value format ----
+# Key              | Value
+# -----------------|------------------------------------------
+# bio              | I am full stack and android and spring boot developer
+# name             | Jay singh
+# dob              | 03-04-2004
+# mobileNumber     | 8809125183
+# avatar           | (./test.jpg)
+# cover            | (./test.jpg)

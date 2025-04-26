@@ -1,0 +1,13 @@
+.homepage {
+    display: grid;
+    grid-template-columns: 10fr 4fr; 
+  }
+  
+  
+  
+  @media (max-width: 720px) {
+    .homepage {
+      grid-template-columns: 1fr; 
+    }
+  }
+  

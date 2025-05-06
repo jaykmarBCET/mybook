@@ -1,0 +1,20 @@
+{
+  "name": "mybook",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && nodemon index.js",
+    "start": "concurrently \"npm run frontend\" \"npm run backend\""
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.3"
+  },
+  "dependencies": {
+    "mybook": "file:"
+  }
+}

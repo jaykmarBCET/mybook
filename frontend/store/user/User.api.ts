@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { UserApiInstance } from '../../api/UserInstance';
+import { UserApiInstance,backendHostUrl } from '../../api/UserInstance';
 import { toast } from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 
@@ -21,6 +21,7 @@ interface UserData {
   error?: string | null;
   socket: Socket | null;
   onlineUsers: number[] | null;
+
   currentUser: () => Promise<void>;
   login: (data: { email: string; password: string }) => Promise<void>;
   register: (data: { name: string; email: string; dob: Date; password: string }) => Promise<void>;
@@ -34,6 +35,8 @@ interface UserData {
   recoverUserVerify: () => Promise<void>;
   connectSocket: () => Promise<void>;
   disconnectSocket: () => Promise<void>;
+  createRegisterVerify:(email:string)=> Promise<string>;
+  emailTokenVerify:(token:string)=>Promise<string>;
 }
 
 const useUserStore = create<UserData>((set, get) => ({
@@ -47,6 +50,12 @@ const useUserStore = create<UserData>((set, get) => ({
     try {
       set({ isLoading: true });
       const res = await UserApiInstance.get('/current-user');
+      if(res.status===400){
+        toast.error(res.data.message)
+        set({isLoading:false})
+        return
+      }
+      
       set({ user: res.data, isLoading: false });
       await get().connectSocket();
       
@@ -60,6 +69,12 @@ const useUserStore = create<UserData>((set, get) => ({
     try {
       set({ isLoading: true });
       const res = await UserApiInstance.post('/login', { email, password });
+      if(res.status===400){
+        toast.error(res.data.message)
+        set({isLoading:false})
+        return;
+      }
+      localStorage.setItem("token",res.data.token)
       set({ user: res.data, isLoading: false });
       toast.success("Login successful!");
       await get().connectSocket();
@@ -73,6 +88,11 @@ const useUserStore = create<UserData>((set, get) => ({
     try {
       set({ isLoading: true });
       const res = await UserApiInstance.post('/register', data);
+      if(res.status>350){
+        toast.error(res.data.message)
+        return;
+      }
+      localStorage.setItem("token",res.data.token)
       set({ user: res.data, isLoading: false });
       toast.success("Registration successful!");
       await get().connectSocket();
@@ -161,7 +181,7 @@ const useUserStore = create<UserData>((set, get) => ({
 
     if (socket && socket.connected) return;
     
-    
+    console.log(backendHostUrl)
     const newSocket = io("http://localhost:3000" , {
       withCredentials: true,
       query: { userId: String(user.id) },
@@ -190,6 +210,30 @@ const useUserStore = create<UserData>((set, get) => ({
       console.log('Socket disconnected manually');
     }
   },
+  // TODO: complete this before exam
+  emailTokenVerify:async(token:string)=>{
+    const response = await UserApiInstance.post(`/verify-user?token=${token}`)
+    if(response.status===200){
+      
+      toast.success("verify successfully")
+     
+      return "ok";
+    }
+    toast.error(response.data.message)
+    return response.data.message;
+
+  },
+  // TODO: complete this before exam
+  createRegisterVerify:async(email:String)=>{
+    const response = await UserApiInstance.post("/create-register-verify",{email})
+    if(response.status===200){
+      toast.success("token generated successfully")
+      
+      return  "ok";
+    }
+    toast.error(response.data.message)
+    return response.data.message
+  }
 }));
 
 export default useUserStore;

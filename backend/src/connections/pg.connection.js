@@ -1,61 +1,24 @@
-import pkg from 'pg';
-const { Client } = pkg;
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
-const dbName = process.env.DATABASE_NAME;
+// You can set this in your .env file as SQLITE_DB=./database.sqlite
+const sqliteDbPath = process.env.SQLITE_DB || './database.sqlite';
 
-async function createDatabase() {
-  const client = new Client({
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    host: process.env.DATABASE_HOST || 'localhost',
-    port: process.env.DATABASE_PORT || 5432,
-  });
-
-  try {
-    await client.connect();
-
-    const res = await client.query(
-      `SELECT 1 FROM pg_database WHERE datname='${dbName}'`
-    );
-
-    if (res.rowCount === 0) {
-      await client.query(`CREATE DATABASE ${dbName}`);
-      console.log(`✅ Database "${dbName}" created`);
-    } else {
-      console.log(`ℹ️ Database "${dbName}" already exists`);
-    }
-  } catch (err) {
-    console.error('❌ Error creating database:', err);
-  } finally {
-    await client.end();
-  }
-}
-
-await createDatabase();
-
-const sequelize = new Sequelize(
-  dbName,
-  process.env.POSTGRES_USER,
-  process.env.POSTGRES_PASSWORD,
-  {
-    host: process.env.DATABASE_HOST || 'localhost',
-    port: process.env.DATABASE_PORT || 5432,
-    dialect: 'postgres',
-    logging: false,
-  }
-);
+// Create a Sequelize instance for SQLite
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: sqliteDbPath,
+  logging: false, // Set to true if you want to see SQL logs
+});
 
 sequelize
   .authenticate()
   .then(() => {
-    console.log('✅ Sequelize connected to database');
+    console.log('✅ Sequelize connected to SQLite database');
   })
   .catch((error) => {
-    console.error('❌ Sequelize connection failed:', error);
+    console.error('❌ Sequelize connection to SQLite failed:', error);
   });
 
 export default sequelize;

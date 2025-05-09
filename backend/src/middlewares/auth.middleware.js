@@ -1,36 +1,32 @@
 import JWT from 'jsonwebtoken';
 import { User } from '../models/User.model.js';
 import { asyncHandler } from '../utils/AsyncHandler.js';
-import ENV from 'dotenv'
-ENV.config()
+import ENV from 'dotenv';
+ENV.config();
 
 export const authVerify = asyncHandler(async (req, res, next) => {
- 
-  
-  const token =
-    req.cookies?.token ||
-    (req.headers.authorization && req.headers.authorization.split(" ")[1]);
-    
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized request: Token missing' });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Unauthorized request: Token missing or malformed' });
   }
-  
 
-  
-  let decoded;
+  const token = authHeader.split(' ')[1];
+
   try {
-    decoded = JWT.verify(token, process.env.SECURE_KEY);
+    const decoded = JWT.verify(token, process.env.SECURE_KEY);
+
+    const user = await User.findOne({
+      where: { id: decoded.id, email: decoded.email },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    req.user = user;
+    next();
   } catch (err) {
     return res.status(401).json({ message: 'Token is invalid or expired' });
   }
-
-  
-  const user = await User.findOne({ where: { id: decoded.id, email: decoded.email } });
-  if (!user) {
-    return res.status(401).json({ message: 'User not found' });
-  }
-
-  req.user = user;
-  next();
 });

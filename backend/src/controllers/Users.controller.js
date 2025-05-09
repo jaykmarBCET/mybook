@@ -8,6 +8,8 @@ import {ImageUpload,logoImage,coverImage, logoImageByPublicId, coverImageByPubli
 import { DeletedUser } from '../models/DeleteAccount.model.js';
 import { SendOtp } from '../utils/Otp.js';
 import { OTP } from '../models/otp.model.js';
+import dotEnv from 'dotenv'
+dotEnv.config()
 
 export const register = asyncHandler(async (req, res) => {
     const { email, password, name } = req.body;
@@ -49,7 +51,7 @@ export const register = asyncHandler(async (req, res) => {
         return res.status(500).json({ message: "Server error while generating token" });
     }
 
-    const verifyUrl = `${process.env.FRONTEND_URL}/email/verify?token=${token.token}`;
+    const verifyUrl = `${process.env.FRONTEND_URL}/email/verify?token=${token}`;
     await SendMail({ userEmail: user.email, url: verifyUrl });
 
     return res
@@ -62,27 +64,45 @@ export const register = asyncHandler(async (req, res) => {
         .json({...user,token});
 });
 
-export const createVerificationUrl = asyncHandler(async(req,res)=>{
+export const createVerificationUrl = asyncHandler(async (req, res) => {
     const user = req.user;
-    if(!user){
-        return res.status(401).json({message:"not found user"})
+    
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
     }
-    const currentUser = await User.findOne({where:{id:user.id,email:user.email}})
-    currentUser.isTokenExpireTime = Date.now()+ 10*60*1000
-    await currentUser.save()
-    const token = await generateToken({id:user.id,email:user.email})
-    if(!token)return res.status(500).json({message:"server issus while create token"})
-    const verifyUrl = `${process.FRONTEND_URL}/email/verify?token=${token}`
-    await SendMail({userEmail:user.email,utl:verifyUrl})
-    return res.status(200).json(user)
-})
+  
+    try {
+      const currentUser = await User.findOne({ where: { id: user.id, email: user.email } });
+  
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found in the database" });
+      }
+  
+      currentUser.isTokenExpireTime = Date.now() + 10 * 60 * 1000;
+      await currentUser.save();
+  
+      const token = await generateToken({ id: user.id, email: user.email });
+      if (!token) {
+        return res.status(500).json({ message: "Server error while generating token" });
+      }
+  
+      const verifyUrl = `${process.env.FRONTEND_URL}/email/verify?token=${token}`;
+  
+      await SendMail({ userEmail: user.email, url: verifyUrl });
+  
+      return res.status(200).json({ message: "Verification link sent successfully" });
+      
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "An error occurred while processing your request" });
+    }
+  });
 export const verifyUser = asyncHandler(async (req, res) => {
     const token = req.query.token;
     if (!token) {
         return res
             .status(400)
-            .setHeader("Content-Type", "text/html")
-            .send(`<h1>No token provided</h1><p>Please log in and try again.</p>`);
+            .json({message:"Token not found"})
     }
 
     try {
@@ -92,29 +112,21 @@ export const verifyUser = asyncHandler(async (req, res) => {
         if (!user) {
             return res
                 .status(400)
-                .setHeader("Content-Type", "text/html")
-                .send(`<h1>User not found</h1>`);
+                .json({message:"user not found"})
         }
 
-        if (new Date(user.isTokenExpireTime).getTime() < Date.now()) {
-            return res
-                .status(400)
-                .setHeader("Content-Type", "text/html")
-                .send(`<h1>Verification Link Expired</h1>`);
-        }
+        
 
         user.isVerifyToken = true;
         await user.save();
 
         return res
             .status(200)
-            .setHeader("Content-Type", "text/html")
-            .send(`<h1>Your account has been verified successfully!</h1>`);
+            .json({message:"verify successfully"})
     } catch (error) {
         return res
             .status(400)
-            .setHeader("Content-Type", "text/html")
-            .send(`<h1>Invalid or Expired Token</h1><p>Please request a new verification email.</p>`);
+            .json({message:error.message})
     }
 });
 
@@ -150,6 +162,7 @@ export const currentUser = asyncHandler(async(req,res)=>{
     if(checkedRemovedUser){
         return res.status(401).json(401).json({message:"you have already deleted this account please go to recovery page"})
     }
+    
     const token = await generateToken({id:user.id,email:user.email})
     user.token = token;
     return res.status(200).cookie('token',token,{httpOnly:true,secure:true,sameSite:'strict'}).json(user)

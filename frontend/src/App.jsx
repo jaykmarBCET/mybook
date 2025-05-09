@@ -17,7 +17,8 @@ import UserProfile from './pages/UserProfile';
 import ChatsPage from './pages/ChatsPage';
 import FriendPage from './pages/FriendPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
+import EmailVerify from './components/EmailVerify';
+import GenerateToken from './components/GenerateToken';
 import './tailwind.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
@@ -36,6 +37,8 @@ function AppRoutes() {
       <Route path='/profile/:id' element={<UserProfile />} />
       <Route path='/friends' element={<FriendPage />} />
       <Route path='/reset-my-password' element={<ResetPasswordPage/>}/>
+      <Route path='/email/verify' element={<EmailVerify/>}/>
+      <Route path='/generate/email/token' element={<GenerateToken/>}/>
       <Route path='*' element={<NotFound />} />
 
     </Routes>

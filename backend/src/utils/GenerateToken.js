@@ -8,7 +8,7 @@ const generateToken = async(payload)=>{
         return token;
     } catch (error) {
         console.log(error)
-        return {message:true}
+        return {message:error.message}
     }
 }
 

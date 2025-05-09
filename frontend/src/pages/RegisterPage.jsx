@@ -61,6 +61,7 @@ function RegisterPage() {
           ))}
           <button type="submit" className='btn bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded-xl shadow-xl w-full mt-2'>Register</button>
         </form>
+        <a href="/login" className='text-blue-500 text-sm'>Already have an account</a>
       </div>
     </div>
   );

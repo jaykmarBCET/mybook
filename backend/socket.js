@@ -14,7 +14,7 @@ const httpServer = http.createServer(expressApp);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ['http://192.168.31.199:4000','http://localhost:4000'], 
+    origin: ['http://192.168.31.199:4000','http://localhost:4000',process.env.FRONTEND], 
     credentials: true,
   },
 });
@@ -44,7 +44,7 @@ io.on("connection", (socket) => {
 
 expressApp.use(
   cors({
-    origin: ['http://192.168.31.199:4000','http://localhost:4000'],
+    origin: ['http://192.168.31.199:4000','http://localhost:4000',process.env.FRONTEND],
     credentials: true,
   })
 );

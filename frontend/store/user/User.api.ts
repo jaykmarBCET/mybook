@@ -182,7 +182,7 @@ const useUserStore = create<UserData>((set, get) => ({
     if (socket && socket.connected) return;
     
     console.log(backendHostUrl)
-    const newSocket = io("http://localhost:3000" , {
+    const newSocket = io("https://4zh6cf-3000.csb.app" , {
       withCredentials: true,
       query: { userId: String(user.id) },
     });

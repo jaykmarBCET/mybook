@@ -7,9 +7,12 @@ const sqliteDbPath = process.env.SQLITE_DB || './database.sqlite';
 
 // Create a Sequelize instance for SQLite
 const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: sqliteDbPath,
-  logging: false, // Set to true if you want to see SQL logs
+  host:process.env.DATABASE_HOST,
+  port:process.env.DATABASE_PORT,
+  dialect:process.env.DATABASE_SERVICE,
+  database:process.env.DATABASE_NAME,
+  password:process.env.POSTGRES_PASSWORD,
+  username:process.env.POSTGRES_USER
 });
 
 sequelize

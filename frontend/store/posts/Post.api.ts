@@ -41,6 +41,7 @@ const usePostStore = create<postInterface>((set, get) => ({
   getPost: async (page=1) => {
     try {
       const res = await PostApiInstance.get(`/get-post?page=${page}`)
+      
       set({ posts: res.data })
     } catch (err) {
       console.error('Error fetching posts:', err)

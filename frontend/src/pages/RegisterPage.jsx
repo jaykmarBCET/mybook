@@ -12,7 +12,7 @@ function RegisterPage() {
     setErrors(prevErrors => ({ ...prevErrors, [name]: '' })); // Clear error on change
   }, []);
 
-  const validate = () => {
+  const validate = useCallback(() => {
     const newErrors = {};
     if (!data.email) newErrors.email = "Email is required";
     if (!data.name) newErrors.name = "Name is required";
@@ -20,14 +20,13 @@ function RegisterPage() {
     if (!data.dob) newErrors.dob = "Date of Birth is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  },[data]);
 
   const HandlerSubmit = useCallback(async () => {
     if (validate()) {
       try {
         await register(data);
-        alert("Registration successful!"); // Replace with better success handling
-        // Optionally redirect
+        
       } catch (error) {
         console.error("Registration failed:", error);
         alert("Registration failed. Please try again."); // Improve error message based on error
@@ -35,7 +34,7 @@ function RegisterPage() {
     } else {
       alert("Please correct the errors in the form.");
     }
-  }, [data, register]);
+  }, [data, register,validate]);
 
   return (
     <div className='border w-full h-full flex flex-col justify-center items-center'>

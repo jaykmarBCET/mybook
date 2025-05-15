@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBook Documentation</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Add Prism.js for code highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">
+            <h1>MyBook</h1>
+            <p>Documentation</p>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#overview"><i class="fas fa-home"></i> Overview</a></li>
+            <li><a href="#features"><i class="fas fa-star"></i> Features</a></li>
+            <li><a href="#installation"><i class="fas fa-download"></i> Installation</a></li>
+            <li><a href="#api"><i class="fas fa-code"></i> API Documentation</a></li>
+            <li><a href="#env"><i class="fas fa-cog"></i> Environment Setup</a></li>
+            <li><a href="#structure"><i class="fas fa-folder"></i> Project Structure</a></li>
+            <li><a href="#screenshots"><i class="fas fa-images"></i> Screenshots</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <div id="overview" class="section">
+            <h1>MyBook Documentation</h1>
+            <p>A modern social media platform with AI-powered features</p>
+            
+            <div class="quick-links">
+                <a href="https://github.com/jaykmarBCET/mybook" class="button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+                <a href="#installation" class="button">
+                    <i class="fas fa-rocket"></i> Quick Start
+                </a>
+            </div>
+        </div>
+
+        <!-- Content sections will be dynamically loaded from README.md -->
+        <div id="content-container"></div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-json.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html> 

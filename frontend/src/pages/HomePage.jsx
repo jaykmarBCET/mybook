@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './home.css';
 import SearchBar from '../components/SearchBar';
 import PostCard from '../components/PostCard';
@@ -37,12 +37,17 @@ function HomePage() {
   const fetchPosts = useCallback(async (pg) => {
     await getPost(pg);
   }, [getPost]);
+  const getData = useCallback(async()=>{
+    if( user &&user.email.length>10){
+      fetchPosts()
+      getAllRequests()
+      getAllFriends()
+    }
+  },[fetchPosts, getAllFriends , getAllRequests,user])
 
   useEffect(() => {
-    fetchPosts(1);
-    getAllRequests();
-    getAllFriends();
-  }, [fetchPosts, getAllRequests, getAllFriends]);
+    getData()
+  }, [getData]);
 
   useEffect(() => {
     handelFilter();

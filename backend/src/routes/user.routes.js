@@ -12,8 +12,8 @@ import {
 
 const router = express.Router();
 const limiter = rateLimit({
-    windowMs:20*60*1000,
-    limit:20,
+    windowMs:10*60*1000,
+    limit:100,
     standardHeaders:'draft-8',
     message:{
         message:"you are reach our limit, please try again after 20 min."

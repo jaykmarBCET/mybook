@@ -1,5 +1,12 @@
-import multer from 'multer'
+import multer from 'multer';
+import fs from 'fs';
 
-const multerMiddleware = multer({dest:'/uploads'})
+// Ensure the uploads directory exists
+const uploadDir = './uploads';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-export {multerMiddleware}
+const multerMiddleware = multer({ dest: uploadDir });
+
+export { multerMiddleware };

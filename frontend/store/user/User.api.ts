@@ -181,8 +181,10 @@ const useUserStore = create<UserData>((set, get) => ({
 
     if (socket && socket.connected) return;
     
-    console.log(backendHostUrl)
-    const newSocket = io("https://4zh6cf-3000.csb.app" , {
+    
+    const baseUrl = import.meta.url
+    console.log(baseUrl)
+    const newSocket = io(import.meta.env.VITE_API_BACKEND_URL , {
       withCredentials: true,
       query: { userId: String(user.id) },
     });

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 
-const baseURL = import.meta.env.VITE_API_BACKEND_URL
+const baseURL =  import.meta.env.VITE_API_BACKEND_URL
+
 export const backendHostUrl=import.meta.env.VITE_API_BACKEND_BASE_URL;
 
 const token = window.localStorage.getItem("token")
@@ -25,6 +26,9 @@ export const PostApiInstance = axios.create({
 export const PostLikeApiInstance = axios.create({
     baseURL: `${baseURL}/post-like`,
     withCredentials: true,
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
 })
 
 export const ChatApiInstance = axios.create({

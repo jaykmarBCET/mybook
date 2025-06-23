@@ -3,8 +3,6 @@ import axios from 'axios';
 
 const baseURL =  import.meta.env.VITE_API_BACKEND_URL
 
-export const backendHostUrl=import.meta.env.VITE_API_BACKEND_BASE_URL;
-
 const token = window.localStorage.getItem("token")
 
 export const UserApiInstance = axios.create({

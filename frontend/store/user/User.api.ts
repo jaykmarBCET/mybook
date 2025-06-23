@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { UserApiInstance,backendHostUrl } from '../../api/UserInstance';
+import { UserApiInstance } from '../../api/UserInstance';
 import { toast } from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 
@@ -184,7 +184,7 @@ const useUserStore = create<UserData>((set, get) => ({
     
     const baseUrl = import.meta.url
     console.log(baseUrl)
-    const newSocket = io(import.meta.env.VITE_API_BACKEND_URL , {
+    const newSocket = io(import.meta.env.VITE_API_BACKEND_BASE_URL , {
       withCredentials: true,
       query: { userId: String(user.id) },
     });

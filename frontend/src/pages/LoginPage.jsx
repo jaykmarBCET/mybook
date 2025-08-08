@@ -53,11 +53,11 @@ function LoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <div className="flex flex-col sm:w-64 md:w-72 w-96 border shadow-xl shadow-blue-300 h-96 bg-gray-100 rounded-2xl justify-around">
-        <h1 className="text-xl font-semibold text-center px-2 pt-4">Login</h1>
+      <div className="flex flex-col sm:w-64 md:w-72 w-96 border border-gray-300   h-96 bg-gray-100 rounded-2xl justify-around">
+        <h1 className="text-xl font-bold text-center px-2 pt-4">Login</h1>
         <div className="flex flex-col px-2">
           <input
-            className="px-4 py-2 text-sm font-sans text-blue-500 mt-2 shadow rounded-2xl text-center"
+            className="px-4 py-2 text-sm font-sans text-blue-500 mt-2 border outline-none border-gray-300 rounded-2xl text-center"
             type="email"
             name="email"
             value={userInfo.email}
@@ -65,7 +65,7 @@ function LoginPage() {
             placeholder="Enter email"
           />
           <input
-            className="px-4 py-2 text-sm font-sans text-blue-500 mt-2 shadow rounded-2xl text-center"
+            className="px-4 py-2 text-sm font-sans text-blue-500 mt-2 border outline-none border-gray-300  rounded-2xl text-center"
             type="password"
             name="password"
             value={userInfo.password}
@@ -82,13 +82,13 @@ function LoginPage() {
         </button>
         <div className="flex flex-col mx-auto">
           <Link
-            className="py-1 bg-blue-600 my-1 px-2 rounded-2xl text-xs text-shadow"
+            className="py-1 text-blue-500 cursor-pointer  my-1 px-2 rounded-2xl text-xs text-shadow"
             to={"/reset-my-password"}
           >
             Reset my password
           </Link>
           <Link
-            className="py-1 bg-blue-600 my-1 px-2 rounded-2xl text-xs text-shadow"
+            className="py-1 text-blue-500 cursor-pointer my-1 px-2 rounded-2xl text-xs text-shadow"
             to={"/register"}
           >
             Don't have an account

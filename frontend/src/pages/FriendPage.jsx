@@ -10,7 +10,7 @@ function FriendPage() {
   const { friends, requests, getAllFriends, getAllRequests } = useFriendStore();
   const { user } = useUserStore();
   const { users } = useRowStore(); 
-
+  console.log(friends)
   useEffect(() => {
     getAllFriends();
     getAllRequests();

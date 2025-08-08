@@ -76,8 +76,8 @@ function HomePage() {
   if (!user) return <Navigate to={'/login'} />;
 
   return (
-    <div className="homepage mx-1">
-      <div className={`${isFull ? 'h-screen' : 'rounded-xl mt-3 h-screen overflow-auto shadow-md bg-gray-100 px-2 py-4'}`}>
+    <div className="homepage mx-1 ">
+      <div className={`${isFull ? 'min-h-screen w-[95vw]' : 'rounded-xl mt-3 h-screen overflow-auto shadow-md bg-gray-100 px-2 py-4'}`}>
         <SearchBar />
 
         {(searchedUser?.length > 0 || searchedPost?.length > 0) && (

@@ -14,7 +14,7 @@ const httpServer = http.createServer(expressApp);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL, 
+    origin: process.env.NODE_ENV==='production'?process.env.FRONTEND_URL:"http://localhost:4000", 
     credentials: true,
   },
 });

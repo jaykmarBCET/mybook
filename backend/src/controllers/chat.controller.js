@@ -1,7 +1,7 @@
 import { asyncHandler } from '../utils/AsyncHandler.js';
 import { Chat } from '../models/Chat.model.js';
 import { dataUpload } from '../utils/Cloudinary.js';
-import { Op, where } from 'sequelize'; 
+import { Op } from 'sequelize'; 
 import { getReceiverSocketId,io } from '../../socket.js';
 export const addChat = asyncHandler(async (req, res) => {
     const user = req.user;

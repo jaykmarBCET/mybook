@@ -1,183 +1,156 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faVideo, faClose } from '@fortawesome/free-solid-svg-icons';
-import useUserStore from '../../store/user/User.api';
-import useCallStore from '../../store/call/call.api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import useUserStore from "../../store/user/User.api";
+import peerService from "../webrtc/peer";
 
 function Call({ isClose, selectedUser }) {
-  const [localStream, setLocalStream] = useState(null);
+  const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-  const [incomingCall, setIncomingCall] = useState(null);
+  const [remoteUser, setRemoteUser] = useState(null);
 
-  const localVideoRef = useRef(null);
+  const myVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const peerConnection = useRef(null);
 
   const { user, socket } = useUserStore();
-  const { startCalling, closeCalling } = useCallStore();
+
+  // 1️⃣ Get camera once
+  const initCamera = useCallback(async () => {
+    if (!myStream) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      setMyStream(stream);
+      return stream;
+    }
+    return myStream;
+  }, [myStream]);
+
+  // 2️⃣ Add tracks to peer
+  const addTracks = useCallback(
+    (stream) => {
+      stream.getTracks().forEach((track) => {
+        peerService.peer.addTrack(track, stream);
+      });
+    },
+    [peerService]
+  );
+
+  // 3️⃣ Outgoing call
+  const handleCall = useCallback(async () => {
+    const stream = await initCamera();
+    addTracks(stream);
+
+    const offer = await peerService.getOffer();
+    socket.emit("user:call", { to: selectedUser, offer });
+    setRemoteUser(selectedUser);
+  }, [initCamera, addTracks, selectedUser, socket]);
+
+  // 4️⃣ Incoming call
+  const handleIncomingCall = useCallback(
+    async ({ from, offer }) => {
+      const stream = await initCamera();
+      addTracks(stream);
+
+      setRemoteUser(from);
+      const answer = await peerService.getAnswer(offer);
+      socket.emit("call:accepted", { to: from, ans: answer });
+    },
+    [initCamera, addTracks, socket]
+  );
+
+  // 5️⃣ Call accepted
+  const handleCallAccepted = useCallback(
+    async ({ ans }) => {
+      await peerService.setRemoteDescription(ans);
+    },
+    []
+  );
+
+  // 6️⃣ Peer negotiation
+  const handleNegotiationNeeded = useCallback(async () => {
+    if (!remoteUser) return;
+    const offer = await peerService.getOffer();
+    socket.emit("peer:nego:needed", { offer, to: remoteUser });
+  }, [remoteUser, socket]);
+
+  const handleNegotiationIncoming = useCallback(
+    async ({ offer, from }) => {
+      const answer = await peerService.getAnswer(offer);
+      socket.emit("peer:nego:final", { ans: answer, to: from });
+    },
+    [socket]
+  );
+
+  const handleNegotiationFinal = useCallback(
+    async ({ ans }) => {
+      await peerService.setRemoteDescription(ans);
+    },
+    []
+  );
+
+  // 7️⃣ Attach streams
+  useEffect(() => {
+    if (myVideoRef.current && myStream) myVideoRef.current.srcObject = myStream;
+  }, [myStream]);
 
   useEffect(() => {
-    startCamera();
-    setupSocketListeners();
-    return () => cleanup();
-  }, []);
+    if (remoteVideoRef.current && remoteStream)
+      remoteVideoRef.current.srcObject = remoteStream;
+  }, [remoteStream]);
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(stream);
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
-    } catch (error) {
-      console.error("Error accessing camera", error);
-    }
-  };
+  // 8️⃣ Peer listeners
+  useEffect(() => {
+    const peer = peerService.peer;
+    const handleTrack = (event) => setRemoteStream(event.streams[0]);
 
-  const setupSocketListeners = () => {
-    socket.on("offer", ({ offer, from, name, avatar }) => {
-      setIncomingCall({ offer, from, name, avatar });
-    });
+    peer.addEventListener("negotiationneeded", handleNegotiationNeeded);
+    peer.addEventListener("track", handleTrack);
 
-    socket.on("answer", async (answer) => {
-      if (peerConnection.current) {
-        await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-      }
-    });
-
-    socket.on("ice-candidate", async (candidate) => {
-      try {
-        if (peerConnection.current) {
-          await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-      } catch (e) {
-        console.error("Error adding received ICE candidate", e);
-      }
-    });
-
-    socket.on("call-ended", () => {
-      handleClose();
-    });
-  };
-
-  const createPeer = () => {
-    if (peerConnection.current) return;
-
-    peerConnection.current = new RTCPeerConnection();
-
-    localStream?.getTracks().forEach((track) => {
-      peerConnection.current.addTrack(track, localStream);
-    });
-
-    peerConnection.current.onicecandidate = (e) => {
-      if (e.candidate) {
-        socket.emit("ice-candidate", e.candidate);
-      }
+    return () => {
+      peer.removeEventListener("negotiationneeded", handleNegotiationNeeded);
+      peer.removeEventListener("track", handleTrack);
     };
+  }, [handleNegotiationNeeded]);
 
-    peerConnection.current.ontrack = (e) => {
-      const stream = e.streams[0];
-      setRemoteStream(stream);
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = stream;
-      }
+  // 9️⃣ Socket listeners
+  useEffect(() => {
+    socket.emit("join", selectedUser);
+
+    socket.on("incoming:call", handleIncomingCall);
+    socket.on("call:accepted", handleCallAccepted);
+    socket.on("peer:nego:needed", handleNegotiationIncoming);
+    socket.on("peer:nego:final", handleNegotiationFinal);
+
+    return () => {
+      socket.off("incoming:call", handleIncomingCall);
+      socket.off("call:accepted", handleCallAccepted);
+      socket.off("peer:nego:needed", handleNegotiationIncoming);
+      socket.off("peer:nego:final", handleNegotiationFinal);
     };
-  };
-
-  const createOffer = async () => {
-    createPeer();
-    const offer = await peerConnection.current.createOffer();
-    await peerConnection.current.setLocalDescription(offer);
-
-    await startCalling({ userId: selectedUser.id, offer });
-  };
-
-  const createAnswer = async (offer, from) => {
-    createPeer();
-    await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
-    const answer = await peerConnection.current.createAnswer();
-    await peerConnection.current.setLocalDescription(answer);
-    socket.emit("answer", { answer, to: from });
-  };
-
-  const acceptCall = async () => {
-    if (!incomingCall) return;
-    await createAnswer(incomingCall.offer, incomingCall.from);
-    setIncomingCall(null);
-  };
-
-  const rejectCall = async () => {
-    if (!incomingCall) return;
-    socket.emit("call-ended", { to: incomingCall.from });
-    setIncomingCall(null);
-  };
-
-  const handleClose = async () => {
-    if (localStream) localStream.getTracks().forEach((track) => track.stop());
-    if (peerConnection.current) peerConnection.current.close();
-    peerConnection.current = null;
-
-    await closeCalling({ userId: selectedUser.id });
-    isClose(false);
-  };
-
-  const cleanup = () => {
-    socket.off("offer");
-    socket.off("answer");
-    socket.off("ice-candidate");
-    socket.off("call-ended");
-    if (localStream) localStream.getTracks().forEach((track) => track.stop());
-    if (peerConnection.current) peerConnection.current.close();
-    peerConnection.current = null;
-  };
+  }, [
+    socket,
+    selectedUser,
+    handleIncomingCall,
+    handleCallAccepted,
+    handleNegotiationIncoming,
+    handleNegotiationFinal,
+  ]);
 
   return (
-    <>
-      {incomingCall && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 flex justify-center items-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full text-center">
-            <h2 className="text-lg font-semibold mb-2">{incomingCall.name} is calling...</h2>
-            <div className="flex justify-center gap-4 mt-4">
-              <button
-                onClick={acceptCall}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg"
-              >
-                Accept
-              </button>
-              <button
-                onClick={rejectCall}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg"
-              >
-                Reject
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="fixed inset-0 z-40 bg-black bg-opacity-60 flex justify-center items-center p-4">
-        <div className="bg-gray-100 rounded-2xl shadow-xl w-full max-w-md sm:max-w-lg p-4 sm:p-6 flex flex-col items-center gap-4">
-          <h1 className="text-xl font-semibold text-gray-800">{selectedUser.name}</h1>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-            <video ref={localVideoRef} autoPlay muted playsInline className="w-full sm:w-1/2 h-40 bg-black rounded-xl" />
-            <video ref={remoteVideoRef} autoPlay playsInline className="w-full sm:w-1/2 h-40 bg-black rounded-xl" />
-          </div>
-
-          <div className="flex gap-6 mt-4">
-            <button onClick={createOffer} className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-md">
-              <FontAwesomeIcon icon={faPhone} />
-            </button>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-md">
-              <FontAwesomeIcon icon={faVideo} />
-            </button>
-            <button onClick={handleClose} className="bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-md">
-              <FontAwesomeIcon icon={faClose} />
-            </button>
-          </div>
-        </div>
+    <div className="w-screen h-screen absolute top-0 left-0 flex flex-col items-center justify-center gap-4 bg-black text-white">
+      <div className="flex gap-4">
+        <video ref={myVideoRef} autoPlay muted playsInline className="w-1/2 h-auto border border-white" />
+        <video ref={remoteVideoRef} autoPlay playsInline className="w-1/2 h-auto border border-white" />
       </div>
-    </>
+      <div className="mt-4 flex gap-4">
+        <button onClick={handleCall} className="px-4 py-2 bg-green-600 rounded">
+          Call
+        </button>
+        <button onClick={isClose} className="px-4 py-2 bg-red-600 rounded">
+          Cancel
+        </button>
+      </div>
+    </div>
   );
 }
 

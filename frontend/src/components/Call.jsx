@@ -146,7 +146,11 @@ function Call({ isClose, selectedUser }) {
         <button onClick={handleCall} className="px-4 py-2 bg-green-600 rounded">
           Call
         </button>
-        <button onClick={isClose} className="px-4 py-2 bg-red-600 rounded">
+        <button  onClick={()=>{
+          isClose()
+          
+        
+        }} className="px-4 py-2 bg-red-600 rounded">
           Cancel
         </button>
       </div>
